@@ -10,9 +10,8 @@
     </style>
 </head>
 <body>
-    <div id="game"></div>
+    <div id="game">Loading...</div>
     <script>
-        // Function to get URL parameters
         function getUrlParams() {
             const params = {};
             const queryString = window.location.search.substring(1);
@@ -24,14 +23,12 @@
             return params;
         }
 
-        // Get user info from URL parameters
-        const userInfo = getUrlParams();
+        const params = getUrlParams();
 
-        // Display user info in the game
-        document.getElementById('game').innerText = `Welcome to the Game, ${userInfo.firstName} ${userInfo.lastName}!`;
-
-        // Now you can use userInfo in your game logic
-        console.log(userInfo);
+        // Simulate loading user information
+        setTimeout(() => {
+            document.getElementById('game').innerText = `Welcome to the Game, ${params.firstName} ${params.lastName}! Session ID: ${params.sessionId}`;
+        }, 1000);
     </script>
 </body>
 </html>
