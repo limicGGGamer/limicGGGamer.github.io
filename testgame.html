@@ -12,6 +12,7 @@
 <body>
     <div id="game">Loading...</div>
     <script>
+        // Function to get URL parameters
         function getUrlParams() {
             const params = {};
             const queryString = window.location.search.substring(1);
@@ -23,18 +24,14 @@
             return params;
         }
 
-        const params = getUrlParams();
-        const sessionId = params.sessionId;
+        // Get user info from URL parameters
+        const userInfo = getUrlParams();
 
-        fetch(`https://your-server-url.com/user-info?sessionId=${sessionId}`)
-            .then(response => response.json())
-            .then(userInfo => {
-                document.getElementById('game').innerText = `Welcome to the Game, ${userInfo.firstName} ${userInfo.lastName}! Session ID: ${sessionId}`;
-            })
-            .catch(error => {
-                document.getElementById('game').innerText = 'Failed to load user info';
-                console.error(error);
-            });
+        // Display user info in the game
+        document.getElementById('game').innerText = `Welcome to the Game, ${userInfo.firstName} ${userInfo.lastName}! Session ID: ${userInfo.sessionId}`;
+
+        // Now you can use userInfo in your game logic
+        console.log(userInfo);
     </script>
 </body>
 </html>
