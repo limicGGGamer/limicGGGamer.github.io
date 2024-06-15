@@ -2,31 +2,60 @@ const TelegramBot = require('node-telegram-bot-api');
 const token = '6990634330:AAEsfuDrFrTjCIlrM88P0CMiBGBwg3XkvkY'; // Replace with your bot's token
 const bot = new TelegramBot(token, { polling: true });
 
-const gameShortName = 'tggametesting'; // Replace with your game's short name
+const gameShortName = 't4213'; // Replace with your game's short name
 
 // Handle the /start command
+// Start command
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
-    bot.sendMessage(chatId, "Welcome to the game! Type /game to play.");
-});
+    bot.sendMessage(chatId, 'Welcome to Guess the Number game! Click the button below to start playing.', {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: 'Play Guess the Number', web_app: { url: 'https://limicgggamer.github.io/testgame.html' } }]
+        ]
+      }
+    });
+  });
+  
 
 // Handle the /game command
 bot.onText(/\/game/, (msg) => {
     const chatId = msg.chat.id;
-    bot.sendGame(chatId, gameShortName);
+    console.log(`Received /game command from chat ${chatId}`);
+    const options = {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: "Play Game", callback_game: {} }]
+            ]
+        }
+    };
+    bot.sendGame(chatId, gameShortName, options)
+        .then(() => {
+            console.log(`Game sent to chat ${chatId}`);
+        })
+        .catch((error) => {
+            console.error(`Failed to send game to chat ${chatId}:`, error);
+            bot.sendMessage(chatId, "Failed to send game. Please try again later.");
+        });
 });
-
-// Handle callback queries (when users press "Play" button)
+// Handle callback queries (when users press "Play Game" button)
 bot.on('callback_query', (callbackQuery) => {
-    const message = callbackQuery.message;
-    const gameUrl = `https://limicgggamer.github.io/testgame.html`; // Replace with your game's URL
-
-    bot.answerCallbackQuery(callbackQuery.id, {
-        url: gameUrl
-    });
+    const callbackQueryId = callbackQuery.id;
+    const chatId = callbackQuery.message.chat.id;
+    console.log(`Received callback query ${callbackQueryId} from chat ${chatId}`);
+    
+    // Acknowledge the callback query
+    bot.answerCallbackQuery(callbackQueryId)
+        .then(() => {
+            console.log(`Callback query ${callbackQueryId} acknowledged`);
+            // You can also send a message or perform additional actions here
+        })
+        .catch((error) => {
+            console.error(`Failed to acknowledge callback query ${callbackQueryId}:`, error);
+        });
 });
 
-// Handle setting the game score
+// Handle inline queries
 bot.on('inline_query', (query) => {
     const results = [{
         type: 'game',
@@ -34,7 +63,9 @@ bot.on('inline_query', (query) => {
         game_short_name: gameShortName
     }];
 
-    bot.answerInlineQuery(query.id, results);
+    bot.answerInlineQuery(query.id, results).catch((error) => {
+        console.log(error);
+    });
 });
 
 // Set game score (example for demo purposes)
@@ -54,3 +85,5 @@ bot.on('message', (msg) => {
         });
     }
 });
+
+console.log('Bot is running...');
