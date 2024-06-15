@@ -12,7 +12,6 @@
 <body>
     <div id="game">Loading...</div>
     <script>
-        // Function to get URL parameters
         function getUrlParams() {
             const params = {};
             const queryString = window.location.search.substring(1);
@@ -27,11 +26,13 @@
         // Get user info from URL parameters
         const userInfo = getUrlParams();
 
-        // Display user info in the game
-        document.getElementById('game').innerText = `Welcome to the Game, ${userInfo.firstName} ${userInfo.lastName}! Session ID: ${userInfo.sessionId}`;
-
-        // Now you can use userInfo in your game logic
-        console.log(userInfo);
+        // Check if required parameters are present
+        if (userInfo.sessionId && userInfo.firstName && userInfo.lastName) {
+            document.getElementById('game').innerText = `Welcome to the Game, ${userInfo.firstName} ${userInfo.lastName}! Session ID: ${userInfo.sessionId}`;
+        } else {
+            document.getElementById('game').innerText = 'Failed to load user info';
+            console.error('Missing URL parameters:', userInfo);
+        }
     </script>
 </body>
 </html>
