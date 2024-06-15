@@ -24,11 +24,17 @@
         }
 
         const params = getUrlParams();
+        const sessionId = params.sessionId;
 
-        // Simulate loading user information
-        setTimeout(() => {
-            document.getElementById('game').innerText = `Welcome to the Game, ${params.firstName} ${params.lastName}! Session ID: ${params.sessionId}`;
-        }, 1000);
+        fetch(`https://your-server-url.com/user-info?sessionId=${sessionId}`)
+            .then(response => response.json())
+            .then(userInfo => {
+                document.getElementById('game').innerText = `Welcome to the Game, ${userInfo.firstName} ${userInfo.lastName}! Session ID: ${sessionId}`;
+            })
+            .catch(error => {
+                document.getElementById('game').innerText = 'Failed to load user info';
+                console.error(error);
+            });
     </script>
 </body>
 </html>

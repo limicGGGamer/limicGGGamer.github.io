@@ -2,6 +2,8 @@ const { Telegraf } = require('telegraf');
 const crypto = require('crypto');
 const bot = new Telegraf('6990634330:AAEsfuDrFrTjCIlrM88P0CMiBGBwg3XkvkY');
 
+const sessions = {};
+
 bot.start((ctx) => {
     const user = ctx.from;
     const sessionId = crypto.randomBytes(16).toString('hex');
