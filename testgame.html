@@ -42,7 +42,7 @@
 
         const tg = window.Telegram.WebApp;
 
-        tg.ready().then(() => {
+        tg.ready(function() {
             chatId = tg.initDataUnsafe.user.id;
             console.log("chatId:", chatId);
         });
@@ -75,8 +75,6 @@
         document.getElementById('increaseButton').addEventListener('click', increaseScore);
         document.getElementById('submitButton').addEventListener('click', submitScore);
 
-        // Initialize the game
-        tg.ready();
     </script>
 </body>
 </html>
