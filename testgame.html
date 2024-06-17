@@ -38,13 +38,11 @@
 
     <script>
         let score = 0;
-        let chatId;
 
         const tg = window.Telegram.WebApp;
 
-        tg.ready(function() {
-            chatId = tg.initDataUnsafe.user.id;
-            console.log("chatId:", chatId);
+        tg.ready(() => {
+            console.log("Telegram Web App is ready");
         });
 
         function increaseScore() {
@@ -54,22 +52,8 @@
 
         function submitScore() {
             console.log(`Sending score: ${score}`); // Debug log
-            fetch('http://localhost:3000/webhook', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ chatId, score })
-            }).then(response => {
-                if (response.ok) {
-                    console.log('Score sent successfully');
-                    tg.close(); // Close the web app after successfully sending the score
-                } else {
-                    console.error('Failed to send score');
-                }
-            }).catch(error => {
-                console.error('Error sending score:', error);
-            });
+            tg.sendData(score.toString());
+            // tg.close(); // Close the web app after successfully sending the score
         }
 
         document.getElementById('increaseButton').addEventListener('click', increaseScore);

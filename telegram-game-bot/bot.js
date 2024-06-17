@@ -98,11 +98,11 @@ bot.command('keyboard', (ctx) => {
 // });
 
 // Handle data sent from the web app
-app.post('/webhook', (req, res) => {
-    const { chatId, score } = req.body;
-    bot.telegram.sendMessage(chatId, `Received score: ${score}`).catch((err) => console.error(err));
-    res.sendStatus(200);
-});
+// app.post('/webhook', (req, res) => {
+//     const { chatId, score } = req.body;
+//     bot.telegram.sendMessage(chatId, `Received score: ${score}`).catch((err) => console.error(err));
+//     res.sendStatus(200);
+// });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
