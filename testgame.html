@@ -32,12 +32,11 @@
     <div id="game-container">
         <h1>Simple Game</h1>
         <div id="score">Score: 0</div>
-        <button onclick="increaseScore()">Increase Score</button>
-        <button onclick="submitScore()">Submit Score</button>
+        <button id="increaseButton">Increase Score</button>
+        <button id="submitButton">Submit Score</button>
     </div>
 
     <script>
-        let score = 0;
         let score = 0;
         let chatId;
 
@@ -45,6 +44,7 @@
 
         tg.ready().then(() => {
             chatId = tg.initDataUnsafe.user.id;
+            console.log("chatId:", chatId);
         });
 
         function increaseScore() {
@@ -71,6 +71,9 @@
                 console.error('Error sending score:', error);
             });
         }
+
+        document.getElementById('increaseButton').addEventListener('click', increaseScore);
+        document.getElementById('submitButton').addEventListener('click', submitScore);
 
         // Initialize the game
         tg.ready();
