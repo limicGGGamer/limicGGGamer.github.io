@@ -50,10 +50,28 @@
             document.getElementById('score').innerText = `Score: ${score}`;
         }
 
-        function submitScore() {
+        // function submitScore() {
+        //     console.log(`Sending score: ${score}`); // Debug log
+        //     tg.sendData(score.toString());
+        //     // tg.close(); // Close the web app after successfully sending the score
+        // }
+        async function submitScore() {
             console.log(`Sending score: ${score}`); // Debug log
-            tg.sendData(score.toString());
-            // tg.close(); // Close the web app after successfully sending the score
+            const userId = tg.initDataUnsafe.user.id; // Get user ID from Telegram Web App context
+            try {
+                const response = await fetch('http://localhost:3000/submit-score', { // Local server URL
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId, score })
+                });
+                const result = await response.json();
+                console.log('Score submitted successfully:', result);
+                // tg.close(); // Optionally close the web app after sending the score
+            } catch (error) {
+                console.error('Error submitting score:', error);
+            }
         }
 
         document.getElementById('increaseButton').addEventListener('click', increaseScore);
