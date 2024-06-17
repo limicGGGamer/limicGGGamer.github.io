@@ -38,6 +38,8 @@
 
     <script>
         let score = 0;
+        const tg = window.Telegram.WebApp;
+        const chatId = tg.initDataUnsafe.user.id;
 
         function increaseScore() {
             score++;
@@ -45,11 +47,27 @@
         }
 
         function submitScore() {
-            Telegram.WebApp.sendData(score.toString()); // Sends score back to the bot
+            console.log(`Sending score: ${score}`); // Debug log
+            fetch('https://yourdomain.com/webhook', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ chatId, score })
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Score sent successfully');
+                    tg.close(); // Close the web app after successfully sending the score
+                } else {
+                    console.error('Failed to send score');
+                }
+            }).catch(error => {
+                console.error('Error sending score:', error);
+            });
         }
 
         // Initialize the game
-        Telegram.WebApp.ready();
+        tg.ready();
     </script>
 </body>
 </html>
