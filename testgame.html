@@ -45,7 +45,7 @@
         }
 
         function submitScore() {
-            Telegram.WebApp.answerWebAppQuery(score.toString()); // Sends score back to the bot
+            Telegram.WebApp.sendData(score.toString()); // Sends score back to the bot
         }
 
         // Initialize the game
