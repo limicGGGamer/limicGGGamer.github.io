@@ -20,6 +20,7 @@ bot.onText(/\/start/, (msg) => {
 
 // Handle the /game command
 bot.onText(/\/game/, (msg) => {
+    console.log(msg);
     const chatId = msg.chat.id;
     console.log(`Received /game command from chat ${chatId}`);
     const options = {
@@ -40,6 +41,7 @@ bot.onText(/\/game/, (msg) => {
 });
 // Handle callback queries (when users press "Play Game" button)
 bot.on('callback_query', (callbackQuery) => {
+    console.log(callbackQuery);
     const callbackQueryId = callbackQuery.id;
     const chatId = callbackQuery.message.chat.id;
     console.log(`Received callback query ${callbackQueryId} from chat ${chatId}`);
@@ -57,6 +59,7 @@ bot.on('callback_query', (callbackQuery) => {
 
 // Handle inline queries
 bot.on('inline_query', (query) => {
+    console.log(query);
     const results = [{
         type: 'game',
         id: query.id,
@@ -70,10 +73,12 @@ bot.on('inline_query', (query) => {
 
 // Set game score (example for demo purposes)
 bot.on('message', (msg) => {
-    if (msg.text.startsWith('/setscore')) {
-        const params = msg.text.split(' ');
+    console.log('Received message:', msg);
+    if (msg.web_app_data) {
+    // if (msg.text.startsWith('/setscore')) {
+        // const params = msg.text.split(' ');
         const userId = msg.from.id;
-        const score = parseInt(params[1]);
+        const score = parseInt(msg.web_app_data.data);
 
         bot.setGameScore(userId, score, {
             chat_id: msg.chat.id,
