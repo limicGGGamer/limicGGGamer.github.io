@@ -40,9 +40,11 @@
         let score = 0;
 
         const tg = window.Telegram.WebApp;
+        const botServerUrl = 'http://localhost:3000/submit-score'; // Change to your bot server URL
 
         tg.ready(() => {
             console.log("Telegram Web App is ready");
+            console.log("Init Data Unsafe: ", tg.initDataUnsafe); // Debug log to check the content of initDataUnsafe
         });
 
         function increaseScore() {
@@ -50,27 +52,21 @@
             document.getElementById('score').innerText = `Score: ${score}`;
         }
 
-        // function submitScore() {
-        //     console.log(`Sending score: ${score}`); // Debug log
-        //     tg.sendData(JSON.stringify({ score: score }));
-        // }
-
         async function submitScore() {
             console.log(`Sending score: ${score}`); // Debug log
             const userId = tg.initDataUnsafe.user.id; // Get user ID from Telegram Web App context
-            const chatId = tg.initDataUnsafe.chat.id; // Get chat ID from Telegram Web App context
-            const username = tg.initDataUnsafe.user.username; // Get username from Telegram Web App context
+            const username = tg.initDataUnsafe.user.first_name || 'Unknown'; // Use first name or 'Unknown'
             try {
                 const response = await fetch(botServerUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ userId, chatId, username, score })
+                    body: JSON.stringify({ userId, username, score })
                 });
                 const result = await response.json();
                 console.log('Score submitted successfully:', result);
-                // tg.close(); // Optionally close the web app after sending the score
+                tg.close(); // Optionally close the web app after sending the score
             } catch (error) {
                 console.error('Error submitting score:', error);
             }
