@@ -138,7 +138,7 @@ bot.onText(/\/leaderboard/, (msg) => {
 
 // Endpoint to receive score submissions
 app.post('/submit-score', (req, res) => {
-    const { userId, chatId, username, score } = req.body;
+    const { userId, username, score } = req.body;
 
     console.log("Received data: ", req.body);
 
@@ -154,7 +154,8 @@ app.post('/submit-score', (req, res) => {
     if (groupChatId) {
         bot.sendMessage(groupChatId, `User ${username} achieved a score of ${score}.`);
     } else {
-        bot.sendMessage(chatId, 'Group chat ID is not set. Use /setgroup command in the group chat to set it.');
+        res.status(400).json({ error: 'Group chat ID is not set. Use /setgroup command in the group chat to set it.' });
+        return;
     }
 
     res.json({ status: 'success' });

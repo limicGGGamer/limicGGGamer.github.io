@@ -66,7 +66,7 @@
                 });
                 const result = await response.json();
                 console.log('Score submitted successfully:', result);
-                tg.close(); // Optionally close the web app after sending the score
+                // tg.close(); // Optionally close the web app after sending the score
             } catch (error) {
                 console.error('Error submitting score:', error);
             }
