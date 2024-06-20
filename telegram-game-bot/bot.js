@@ -6,9 +6,9 @@ const bodyParser = require('body-parser');
 const cors = require('cors'); // Added CORS support
 
 const token = '6990634330:AAGofMDtUGcs5ByyHIYAMEHHyJt_8VqeL_A'; // Replace with your bot's token
-// const WEB_APP_URL = "https://elfintontest.gggamer.org/public/testgame.html";
-const WEB_APP_URL = "https://elfintontest.gggamer.org";
-const game_photo_url = 'http://ec2-54-254-221-210.ap-southeast-1.compute.amazonaws.com/public/tgGame.png'; // Ensure this is correct
+const WEB_APP_URL = "https://staging.d3da4kmprr3s09.amplifyapp.com/";
+// const WEB_APP_URL = "https://elfintontest.gggamer.org";
+const game_photo_url = 'http://ec2-54-254-221-210.ap-southeast-1.compute.amazonaws.com/public/tg_game.png'; // Ensure this is correct
 
 const bot = new TelegramBot(token, {
     polling: {
