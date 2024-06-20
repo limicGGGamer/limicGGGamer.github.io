@@ -6,8 +6,9 @@ const bodyParser = require('body-parser');
 const cors = require('cors'); // Added CORS support
 
 const token = '6990634330:AAGofMDtUGcs5ByyHIYAMEHHyJt_8VqeL_A'; // Replace with your bot's token
-const WEB_APP_URL = "https://limicgggamer.github.io/telegram-game-bot/public/testgame.html";
-const game_photo_url = 'https://limicgggamer.github.io/telegram-game-bot/public/tgGame.png'; // Ensure this is correct
+// const WEB_APP_URL = "https://elfintontest.gggamer.org/public/testgame.html";
+const WEB_APP_URL = "https://elfintontest.gggamer.org";
+const game_photo_url = 'http://ec2-54-254-221-210.ap-southeast-1.compute.amazonaws.com/public/tgGame.png'; // Ensure this is correct
 
 const bot = new TelegramBot(token, {
     polling: {
@@ -25,7 +26,8 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 // const short_name = 'tggametest';
 
-let groupChatId = "-4236530154"; // Variable to store the group chat ID
+let groupChatId = null;
+// let groupChatId = "-4236530154"; // Variable to store the group chat ID
 let leaderboard = []; // Array to store the leaderboard
 
 // Serve the web app from the public directory
