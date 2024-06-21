@@ -104,7 +104,7 @@ bot.onText(/\/leaderboard/, (msg) => {
         let leaderboardMessage = 'Leaderboard:\n\n';
         leaderboard.sort((a, b) => b.score - a.score);
         leaderboard.forEach((entry, index) => {
-            leaderboardMessage += `${index + 1}. ${entry.username}: ${entry.score}\n`;
+            leaderboardMessage += `${index + 1}. ${entry.username}: ${entry.score}, userId: ${entry.userId}\n`;
         });
         bot.sendMessage(chatId, leaderboardMessage);
     }
@@ -115,6 +115,7 @@ app.post('/submit-score', (req, res) => {
     const { userId, username, score } = req.body;
 
     console.log("Received data: ", req.body);
+    const userIdStr = userId.toString();
 
     // Update the leaderboard
     const existingUser = leaderboard.find(entry => entry.userId === userId);
@@ -126,19 +127,48 @@ app.post('/submit-score', (req, res) => {
             console.log(`Score for ${username} is not updated as the new score ${score} is lower than the existing score ${existingUser.score}`);
         }
     } else {
-        leaderboard.push({ userId, username, score });
+        leaderboard.push({ userId: userIdStr, username, score });
         console.log(`Added new score for ${username}: ${score}`);
     }
 
     // Forward score to the stored group chat ID
     if (groupChatId) {
         bot.sendMessage(groupChatId, `User ${username} achieved a score of ${score}.`);
-    } else {
-        res.status(400).json({ error: 'Group chat ID is not set. Use /setgroup command in the group chat to set it.' });
-        return;
     }
+    //  else {
+    //     res.status(400).json({ error: 'Group chat ID is not set. Use /setgroup command in the group chat to set it.' });
+    //     return;
+    // }
 
     res.json({ status: 'success' });
+});
+
+// Endpoint to get the highest score for a specific user
+app.get('/highest-score', (req, res) => {
+    const userId = req.query.userId;
+    console.log("userId: ", userId);
+
+    if (!userId) {
+        return res.status(400).json({ status: 'error', message: 'User ID is required' });
+    }
+
+    const userIdStr = userId.toString();
+    const user = leaderboard.find(entry => entry.userId === userIdStr);
+    console.log("user: ", user);
+
+    if (user) {
+        res.json({
+            status: 'success',
+            user: user.username,
+            score: user.score
+        });
+    } else {
+        res.json({
+            status: 'success',
+            user: 'No user',
+            score: 0
+        });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
