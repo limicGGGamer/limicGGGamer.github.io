@@ -4,11 +4,16 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors'); // Added CORS support
+const axios = require('axios'); // Import axios
 
-const token = '6990634330:AAGofMDtUGcs5ByyHIYAMEHHyJt_8VqeL_A'; // Replace with your bot's token
-const WEB_APP_URL = "https://staging.d3da4kmprr3s09.amplifyapp.com/";
+const token = '7142909371:AAEd28Id6dHMy92A1cmq5u29Gv6pgvDTY7M'; // Replace with your bot's token
+const WEB_APP_URL = "https://elfinfamily.elfinmetaverse.com/";
 // const WEB_APP_URL = "https://elfintontest.gggamer.org";
-const game_photo_url = 'http://ec2-54-254-221-210.ap-southeast-1.compute.amazonaws.com/public/tg_game.png'; // Ensure this is correct
+const game_photo_url = 'http://ec2-54-254-221-210.ap-southeast-1.compute.amazonaws.com/public/tg_ton_game_photo.png'; // Ensure this is correct
+
+const api_base_url = "https://elfintongame.gggamer.org";
+const x_api_key = "UTmNNhkgSE54G3LToyYs9aN9R7lLk931muMge9dg";
+const game_id = "000000"
 
 const bot = new TelegramBot(token, {
     polling: {
@@ -30,10 +35,10 @@ let groupChatId = null;
 // let groupChatId = "-4236530154"; // Variable to store the group chat ID
 let leaderboard = []; // Array to store the leaderboard
 
-// Serve the web app from the public directory
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'testgame.html'));
-});
+// // Serve the web app from the public directory
+// app.get('/', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'public', 'testgame.html'));
+// });
 
 
 
@@ -51,22 +56,22 @@ bot.onText(/\/setgroup/, (msg) => {
 // Bot command to start the game with an inline keyboard button in a private chat
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
-
+    
     if (msg.chat.type === 'private') {
         const options = {
             reply_markup: {
                 inline_keyboard: [
-                    [
-                        {
-                            text: "Play Game",
-                            web_app: { url: WEB_APP_URL }
-                        }
-                    ]
+                    [{ text: 'Play Game', web_app: { url: WEB_APP_URL }}],
+                    [{ text: 'Twitter', url: 'https://x.com/intent/follow?original_referer=https%3A%2F%2Fdeveloper.x.com%2F&ref_src=twsrc%5Etfw%7Ctwcamp%5Ebuttonembed%7Ctwterm%5Efollow%7Ctwgr%5ENASA&screen_name=ElfinGames' }, { text: 'Discord', url: 'https://discord.gg/vZRr3pTDv4' }, { text: 'Galxe', url: 'https://app.galxe.com/quest/ElfinMetaverse?filter=%5B%22Active%22%2C%22NotStarted%22%5D' }],
+                    [{ text: '官方中文群', url: 'https://t.me/ElfinKDMCN' }, { text: 'English Group', url: 'https://t.me/ElfinKDM' }],
+                    [{ text: 'Leaderboard', callback_data: 'leaderboard' }]
                 ]
             }
         };
-
-        bot.sendMessage(chatId, "Click the button below to play the game:", options);
+        bot.sendPhoto(chatId, game_photo_url, { caption: "🎮 Ready to test your skills? Join the fun and challenge your friends in this exciting game! 🏆 Click 'Play Game' to start your adventure and climb the leaderboard. Good luck! 🚀", reply_markup: options.reply_markup })
+            .catch(error => {
+                console.error('Error sending game photo:', error);
+            });
     } else {
         bot.sendMessage(chatId, "Please start the game in a private chat.");
     }
@@ -80,11 +85,14 @@ bot.onText(/\/game/, (msg) => {
         const options = {
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: 'Play Game', web_app: { url: WEB_APP_URL }}]
+                    [{ text: 'Play Game', web_app: { url: WEB_APP_URL }}],
+                    [{ text: 'Twitter', url: 'https://x.com/intent/follow?original_referer=https%3A%2F%2Fdeveloper.x.com%2F&ref_src=twsrc%5Etfw%7Ctwcamp%5Ebuttonembed%7Ctwterm%5Efollow%7Ctwgr%5ENASA&screen_name=ElfinGames' }, { text: 'Discord', url: 'https://discord.gg/vZRr3pTDv4' }, { text: 'Galxe', url: 'https://app.galxe.com/quest/ElfinMetaverse?filter=%5B%22Active%22%2C%22NotStarted%22%5D' }],
+                    [{ text: '官方中文群', url: 'https://t.me/ElfinKDMCN' }, { text: 'English Group', url: 'https://t.me/ElfinKDM' }],
+                    [{ text: 'Leaderboard', callback_data: 'leaderboard' }]
                 ]
             }
         };
-        bot.sendPhoto(chatId, game_photo_url, { caption: "Play the game!", reply_markup: options.reply_markup })
+        bot.sendPhoto(chatId, game_photo_url, { caption: "🎮 Ready to test your skills? Join the fun and challenge your friends in this exciting game! 🏆 Click 'Play Game' to start your adventure and climb the leaderboard. Good luck! 🚀", reply_markup: options.reply_markup })
             .catch(error => {
                 console.error('Error sending game photo:', error);
             });
@@ -93,81 +101,295 @@ bot.onText(/\/game/, (msg) => {
     }
 });
 
+app.get('/get-tasks', async (req, res) => {
+    const userId = req.query.userId;
+    // console.log("userId: ", userId);
 
-// Command to show the leaderboard
-bot.onText(/\/leaderboard/, (msg) => {
-    const chatId = msg.chat.id;
+    if (!userId) {
+        return res.status(400).json({ status: 'error', message: 'User ID is required' });
+    }
 
-    if (leaderboard.length === 0) {
-        bot.sendMessage(chatId, 'No scores have been recorded yet.');
-    } else {
-        let leaderboardMessage = 'Leaderboard:\n\n';
-        leaderboard.sort((a, b) => b.score - a.score);
-        leaderboard.forEach((entry, index) => {
-            leaderboardMessage += `${index + 1}. ${entry.username}: ${entry.score}, userId: ${entry.userId}\n`;
+    // Fetch the highest score from the external API
+    try {
+        const url = `${api_base_url}/tasklist?userId=${userId}&game=${game_id}`;
+
+        const response = await axios.get(url, {
+            headers: {
+                'x-api-key': x_api_key
+            }
         });
-        bot.sendMessage(chatId, leaderboardMessage);
+
+        let tasks = response.data.data.Items || [];
+        
+        tasks = tasks.map(item=>({
+            task: item.taskname
+        }));
+        // console.log(tasks);
+
+        res.json({ status: 'success', tasks: tasks });
+
+    } catch (error) {
+        console.error("Error fetching tasks from external API: ", error.response ? error.response.data : error.message);
+        res.status(500).json({ status: 'error', message: 'Failed to fetch tasks from external API' });
     }
 });
 
-// Endpoint to receive score submissions
-app.post('/submit-score', (req, res) => {
-    const { userId, username, score } = req.body;
+app.post('/update-tasks', async(req, res)=>{
+    const { userId, taskname, state } = req.body;
 
-    console.log("Received data: ", req.body);
-    const userIdStr = userId.toString();
+    // console.log("Received data: ", req.body);
+
+    // Redirect to another API with the provided headers and body
+    try {
+        const url = `${api_base_url}/task`;
+
+        const response = await axios.post(url, {
+            "userId": `${userId}`,
+            "taskname": `${taskname}`,
+            "state": `${state}`,
+            "game_id": `${game_id}`
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': x_api_key // Replace with your actual API key
+            }
+        });
+
+        // console.log("Successfully posted to external API: ", response.data);
+    } catch (error) {
+        console.error("Error posting to external API: ", error.response ? error.response.data : error.message);
+    }
+
+    res.json({ status: 'success' });
+});
+
+// Endpoint to get the leaderboard
+app.get('/leaderboard', async (req, res) => {
+    try {
+        const url = `${api_base_url}/leaderboard`;
+        const response = await axios.post(url, {
+            "game_id": `${game_id}`
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': x_api_key
+            }
+        });
+
+        if (response.data.result === 1 && response.data.data.Items) {
+            const leaderboardData = response.data.data.Items.map(item => ({
+                score: item.score,
+                userId: item.user_id,
+                gameTimes: item.game_times,
+                username: item.username
+            }));
+
+            // console.log("Leaderboard data: ", leaderboardData);
+
+            res.json({ status: 'success', leaderboard: leaderboardData });
+        } else {
+            // console.log("No data found in leaderboard");
+            res.json({ status: 'success', leaderboard: [] });
+        }
+    } catch (error) {
+        console.error("Error fetching leaderboard data: ", error.response ? error.response.data : error.message);
+        res.status(500).json({ status: 'error', message: 'Failed to fetch leaderboard data' });
+    }
+});
+
+// Function to fetch and send the leaderboard
+async function fetchAndSendLeaderboard(chatId) {
+    try {
+        let url = `${api_base_url}/leaderboard`;
+        let response = await axios.post(url, {
+            "game_id": `${game_id}`
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': x_api_key
+            }
+        });
+
+        if (response.data.result === 1 && response.data.data.Items) {
+            const leaderboardData = response.data.data.Items.map(item => ({
+                score: item.score,
+                userId: item.user_id,
+                gameTimes: item.game_times,
+                username: item.username
+            }));
+
+            let leaderboardMessage = '🏆 Leaderboard 🏆\n\n';
+            leaderboardData.forEach((entry, index) => {
+                leaderboardMessage += `${index + 1}. User: ${entry.username}, Score: ${entry.score}\n`;
+            });
+
+            // console.log("Leaderboard data: ", leaderboardData);
+            // bot.sendMessage(chatId, leaderboardMessage);
+
+
+            url = `${api_base_url}/me?userId=${chatId}&game=${game_id}`;
+
+            response = await axios.get(url, {
+                headers: {
+                    'x-api-key': x_api_key
+                }
+            });
+    
+            const data = response.data.data;
+    
+            leaderboardMessage += `\n\n`;
+            leaderboardMessage += `User: ${data.username}\nRank: ${data.rank}\nScore: ${data.score}\n`;
+    
+            // console.log("Leaderboard data: ", leaderboardData);
+            bot.sendMessage(chatId, leaderboardMessage);
+
+
+        } else {
+            // console.log("No data found in leaderboard");
+            bot.sendMessage(chatId, "No data found in leaderboard.");
+        }
+    } catch (error) {
+        console.error("Error fetching leaderboard data: ", error.response ? error.response.data : error.message);
+        bot.sendMessage(chatId, "Failed to fetch leaderboard data.");
+    }
+
+}
+
+// Callback query handler for the leaderboard button
+bot.on('callback_query', async (callbackQuery) => {
+    const msg = callbackQuery.message;
+    const chatId = msg.chat.id;
+
+    if (callbackQuery.data === 'leaderboard') {
+        await fetchAndSendLeaderboard(chatId);
+    }
+});
+
+// Endpoint to get the leaderboard
+bot.onText(/\/leaderboard/, async (msg) => {
+    const chatId = msg.chat.id;
+
+    if (msg.chat.type === 'private'){
+        await fetchAndSendLeaderboard(chatId);
+    }else{
+        try {
+            let url = `${api_base_url}/leaderboard`;
+            let response = await axios.post(url, {
+                "game_id": `${game_id}`
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': x_api_key
+                }
+            });
+    
+            if (response.data.result === 1 && response.data.data.Items) {
+                const leaderboardData = response.data.data.Items.map(item => ({
+                    score: item.score,
+                    userId: item.user_id,
+                    gameTimes: item.game_times,
+                    username: item.username
+                }));
+    
+                let leaderboardMessage = '🏆 Leaderboard 🏆\n\n';
+                leaderboardData.forEach((entry, index) => {
+                    leaderboardMessage += `${index + 1}. User: ${entry.username}, Score: ${entry.score}\n`;
+                });
+    
+                // console.log("Leaderboard data: ", leaderboardData);
+                bot.sendMessage(chatId, leaderboardMessage);
+               
+            } else {
+                console.log("No data found in leaderboard");
+                bot.sendMessage(chatId, "No data found in leaderboard.");
+            }
+        } catch (error) {
+            console.error("Error fetching leaderboard data: ", error.response ? error.response.data : error.message);
+            bot.sendMessage(chatId, "Failed to fetch leaderboard data.");
+        }
+    }
+
+   
+});
+
+// Endpoint to receive score submissions
+app.post('/submit-score', async (req, res) => {
+    const { userId, username, score, wallet_address } = req.body;
+
+    // console.log("Received data: ", req.body);
 
     // Update the leaderboard
     const existingUser = leaderboard.find(entry => entry.userId === userId);
     if (existingUser) {
         if (score > existingUser.score) {
             existingUser.score = score; // Update the score if the new score is higher
-            console.log(`Updated score for ${username} to ${score}`);
+            // console.log(`Updated score for ${username} to ${score}`);
         } else {
-            console.log(`Score for ${username} is not updated as the new score ${score} is lower than the existing score ${existingUser.score}`);
+            // console.log(`Score for ${username} is not updated as the new score ${score} is lower than the existing score ${existingUser.score}`);
         }
     } else {
-        leaderboard.push({ userId: userIdStr, username, score });
-        console.log(`Added new score for ${username}: ${score}`);
+        leaderboard.push({ userId, username, score });
+        // console.log(`Added new score for ${username}: ${score}`);
     }
 
     // Forward score to the stored group chat ID
     if (groupChatId) {
         bot.sendMessage(groupChatId, `User ${username} achieved a score of ${score}.`);
     }
-    //  else {
-    //     res.status(400).json({ error: 'Group chat ID is not set. Use /setgroup command in the group chat to set it.' });
-    //     return;
-    // }
+
+    // Redirect to another API with the provided headers and body
+    try {
+        const url = `${api_base_url}/upsertUser`;
+
+        const response = await axios.post(url, {
+            "userId": `${userId}`,
+            "game_id": `${game_id}`, // You might need to dynamically set this
+            "score": `${score}`,
+            "username": `${username}`,
+            "evmwallet": "evmwallet",
+            "tonwallet": wallet_address
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': x_api_key // Replace with your actual API key
+            }
+        });
+
+        // console.log("Successfully posted to external API: ", response.data);
+    } catch (error) {
+        console.error("Error posting to external API: ", error.response ? error.response.data : error.message);
+    }
 
     res.json({ status: 'success' });
 });
 
 // Endpoint to get the highest score for a specific user
-app.get('/highest-score', (req, res) => {
+app.get('/highest-score', async (req, res) => {
     const userId = req.query.userId;
-    console.log("userId: ", userId);
+    // console.log("userId: ", userId);
 
     if (!userId) {
         return res.status(400).json({ status: 'error', message: 'User ID is required' });
     }
 
-    const userIdStr = userId.toString();
-    const user = leaderboard.find(entry => entry.userId === userIdStr);
-    console.log("user: ", user);
+    // Fetch the highest score from the external API
+    try {
+        const url = `${api_base_url}/me?userId=${userId}&game=${game_id}`;
 
-    if (user) {
-        res.json({
-            status: 'success',
-            user: user.username,
-            score: user.score
+        const response = await axios.get(url, {
+            headers: {
+                'x-api-key': x_api_key
+            }
         });
-    } else {
-        res.json({
-            status: 'success',
-            user: 'No user',
-            score: 0
-        });
+
+        const highestScore = response.data.data.score || 0;
+        const lastupdate_time = response.data.data.lastupdate_time;
+        // console.log(`Highest score for user ${userId} is ${highestScore}`);
+        res.json({ status: 'success', score: highestScore,  lastupdate_time: lastupdate_time});
+    } catch (error) {
+        console.error("Error fetching highest score from external API: ", error.response ? error.response.data : error.message);
+        // res.status(500).json({ status: 'error', message: 'Failed to fetch highest score from external API' });
+        res.json({ status: 'success', score: 0,  lastupdate_time: 0});
     }
 });
 
